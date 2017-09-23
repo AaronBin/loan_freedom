@@ -27,7 +27,7 @@ class ElasticController extends Controller
         header('Content-Type:application/json; charset=utf-8');
         require '../vendor/autoload.php';
         $hosts = [
-            'http://127.0.0.1:9200'
+            'http://10.241.104.66:9200'
         ];
         $this->client =  ClientBuilder::create()
             ->setHosts($hosts)
