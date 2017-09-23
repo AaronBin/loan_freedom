@@ -208,4 +208,18 @@ class ElasticController extends Controller
         }
 
     }
+
+    public function actionDemo()
+    {
+        $this->init();
+
+        echo "<pre>";
+        print_r($this->client);
+        exit;
+
+        $res = $this->actionGetMessage('段落');
+        echo "<pre>";
+        print_r($res);exit;
+    }
+
 }
