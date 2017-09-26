@@ -10,14 +10,11 @@ use Elasticsearch\ClientBuilder;
  * Time: 16:21
  */
 
-
-
 class ElasticController extends Controller
 {
     const  CLIENT_ID     = 'XZdOW0c76N4C2ZlR';
-    const  RECORD_ADDRESS = 'http://101.37.86.22:8013';
-    //const  CALL_SYSTEM_CONVERT_URL = 'http://192.168.133.65:81/api';
-    const  CALL_SYSTEM_CONVERT_URL = 'http://api.call-service.xianjincard.com/api';
+    public $_host        = 'http://10.241.104.66:9200';
+    //public $_host        = 'http://127.0.0.1:9200';
     public $_index       = 'call_system_record';
     public $_type        = 'logs';
     public $client       = null;
@@ -26,22 +23,8 @@ class ElasticController extends Controller
     {
         header('Content-Type:application/json; charset=utf-8');
         require '../vendor/autoload.php';
-        $hosts = [
-            'http://10.241.104.66:9200'
-        ];
         $this->client =  ClientBuilder::create()
-            ->setHosts($hosts)
-            ->build();
-    }
-
-    public function cli_init()
-    {
-        require '../vendor/autoload.php';
-        $hosts = [
-            'http://10.241.104.66:9200'
-        ];
-        $this->client =  ClientBuilder::create()
-            ->setHosts($hosts)
+            ->setHosts([$this->_host])
             ->build();
     }
 
@@ -183,10 +166,13 @@ class ElasticController extends Controller
     }
 
 
+    /**
+     * 写入es
+     */
     public function actionWrite()
     {
         $param = \Yii::$app->request->post('param');
-        $this->cli_init();
+        $this->init();
         $index = [
             'index'  => $this->_index,
             'type'   => $this->_type,
@@ -209,17 +195,44 @@ class ElasticController extends Controller
 
     }
 
-    public function actionDemo()
+    /**
+     * @param $task_id
+     * @param $content
+     * 更新es
+     */
+    public function actionUpdate($task_id,$content)
     {
         $this->init();
-
-        echo "<pre>";
-        print_r($this->client);
-        exit;
-
-        $res = $this->actionGetMessage('段落');
-        echo "<pre>";
-        print_r($res);exit;
+        $params = [
+            'index' => $this->_index,
+            'type'  => $this->_type,
+            'body' => [
+                'query' => [
+                    'match' => [
+                        'task_id' => $task_id,
+                    ]
+                ],
+                'script' => [
+                    "inline" => "ctx._source.content = '{$content}'",
+                ],
+            ]
+        ];
+        try{
+            $result = $this->client->updateByQuery($params);
+            if(empty($result) && !$result['updated'])
+            {
+                throw new \Exception('update failed');
+            }
+            echo json_encode([
+                'code' => 1000,
+                'message' => 'success'
+            ]);
+        }catch (\Exception $e){
+            echo json_encode([
+                'code' => 1001,
+                'message' => 'error'
+            ]);
+        }
     }
 
 }
