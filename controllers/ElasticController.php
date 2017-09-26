@@ -12,7 +12,6 @@ use Elasticsearch\ClientBuilder;
 
 class ElasticController extends Controller
 {
-    const  CLIENT_ID     = 'XZdOW0c76N4C2ZlR';
     public $_host        = 'http://10.241.104.66:9200';
     //public $_host        = 'http://127.0.0.1:9200';
     public $_index       = 'call_system_record';
