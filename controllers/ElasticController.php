@@ -199,8 +199,10 @@ class ElasticController extends Controller
      * @param $content
      * 更新es
      */
-    public function actionUpdate($task_id,$content)
+    public function actionUpdate()
     {
+        $task_id = \Yii::$app->request->post('task_id');
+        $content = \Yii::$app->request->post('content');
         $this->init();
         $params = [
             'index' => $this->_index,
