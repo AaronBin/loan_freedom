@@ -236,4 +236,52 @@ class ElasticController extends Controller
         }
     }
 
+    /**
+     * 多滚关键字同时检索
+     * @param $contents
+     * @param int $pageNum
+     */
+    public function actionGetContents($contents,$pageNum=1)
+    {
+        $contents = json_decode($contents,true);
+        $result  = [];
+        foreach($contents as $key=>$val)
+        {
+            $data = $this->getFiledVal('content',$val);
+            $result = array_merge($data,$result);
+        }
+        $start = $pageNum ? $pageNum : 1;
+        $numRes = array_slice($result,($start-1),20);
+        unset($data);
+        $data['total'] = count($result);
+        $data['hits']  = $numRes;
+        exit(json_encode([
+            'code'    => 1000,
+            'message' => 'success',
+            'data'    => $data
+        ]));
+    }
+
+    public function getFiledVal($filed,$val)
+    {
+        $params = [
+            'index' => $this->_index,
+            'type'  => $this->_type,
+            'body' => [
+                'size'  => $this->back_num,
+                'query' => [
+                    'bool' => [
+                        'should' => [
+                            'match_phrase' => [
+                                $filed => $val
+                            ]
+                        ]
+                    ]
+                ],
+            ]
+        ];
+        $result = $this->client->search($params);
+        return isset($result['hits']['hits']) ? $result['hits']['hits'] : [];
+    }
+
 }
