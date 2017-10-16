@@ -19,7 +19,8 @@
         "yiisoft/yii2-bootstrap": "~2.0.0",
         "yiisoft/yii2-swiftmailer": "~2.0.0",
         "elasticsearch/elasticsearch": "^2.3",
-        "matyhtf/swoole_framework": "dev-master"
+        "matyhtf/swoole_framework": "dev-master",
+        "aliyuncs/oss-sdk-php": "^2.2"
     },
     "require-dev": {
         "yiisoft/yii2-debug": "~2.0.0",
