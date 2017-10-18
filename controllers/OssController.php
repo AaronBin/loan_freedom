@@ -12,10 +12,10 @@ use yii\web\Controller;
 
 class OssController extends Controller
 {
-    public $access_key_id     = 'LTAIeDjdTB0UCu5f';
-    public $access_key_secret = 'C95uUOBfIE6DZsn03BPZiyOg6UjdaI';
-    public $endpoint          = 'oss-cn-qingdao.aliyuncs.com';
-    public $bucket            = 'callcenter-record-test';
+    public $access_key_id     = 'LTAIRcIsds2Olwev';
+    public $access_key_secret = 'CegkdzzDDpA9DkTcfkP2m5ivC8xFtK';
+    public $endpoint          = 'oss-cn-hangzhou.aliyuncs.com';
+    public $bucket            = 'afterloan';
 
 
     public $client = null;
