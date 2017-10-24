@@ -12,18 +12,19 @@ use Elasticsearch\ClientBuilder;
 
 class ElasticController extends Controller
 {
-    public $_host        = 'http://10.241.104.66:9200';
-    //public $_host        = 'http://127.0.0.1:9200';
-    public $_index       = 'call_system_record';
-    public $_type        = 'logs';
+    public $_index       = null;
+    public $_type        = null;
     public $client       = null;
     public $back_num     = 100;
     public function init()
     {
+        $this->_index = \Yii::$app->params['qa_params']['_index'];
+        $this->_type  = \Yii::$app->params['qa_params']['_type'];
+
         header('Content-Type:application/json; charset=utf-8');
         require '../vendor/autoload.php';
         $this->client =  ClientBuilder::create()
-            ->setHosts([$this->_host])
+            ->setHosts([\Yii::$app->params['qa_params']['es_host']])
             ->build();
     }
 
