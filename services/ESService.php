@@ -250,24 +250,43 @@ class ESService extends BaseService
 
     public function getFiledVal($filed,$val,$check_status)
     {
-        $params = [
-            'size'  => $this->back_num,
-            'query' => [
-                'bool' => [
-                    'should' => [
-                        ['match_phrase' => ['check_status' => $check_status]],
-                        ['match_phrase' => [$filed => $val]],
+        if($check_status){
+            $params = [
+                'size'  => $this->back_num,
+                'query' => [
+                    'bool' => [
+                        'must' => [
+                            [
+                                'match_phrase' => [
+                                    $filed => $val
+                                ]
+                            ],
+                            [
+                                'match' => [
+                                    'check_status' => $check_status
+                                ]
+                            ]
+                        ],
                     ]
-                ]
-            ],
-        ];
+                ],
+            ];
+        }else{
+            $params = [
+                'size'  => $this->back_num,
+                'query' => [
+                    'bool' => [
+                        'should' => [
+                            ['match_phrase' => [$filed => $val]],
+                        ]
+                    ]
+                ],
+            ];
+        }
+
         $params = $this->jointParam($params);
         $result = $this->client->search($params);
         return isset($result['hits']['hits']) ? $result['hits']['hits'] : [];
     }
-
-
-
 
 
 }

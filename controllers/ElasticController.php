@@ -115,5 +115,5 @@ class ElasticController extends BaseController
         $this->_back = $this->_success;
         $this->json();
     }
-
+    
 }
