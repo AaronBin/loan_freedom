@@ -1,7 +1,7 @@
 <?php
 namespace app\controllers;
-use yii\web\Controller;
-use Elasticsearch\ClientBuilder;
+use app\libs\Factory;
+use app\services\ESService;
 
 /**
  * Created by PhpStorm.
@@ -10,23 +10,8 @@ use Elasticsearch\ClientBuilder;
  * Time: 16:21
  */
 
-class ElasticController extends Controller
+class ElasticController extends BaseController
 {
-    public $_index       = null;
-    public $_type        = null;
-    public $client       = null;
-    public $back_num     = 100;
-    public function init()
-    {
-        $this->_index = \Yii::$app->params['qa_params']['_index'];
-        $this->_type  = \Yii::$app->params['qa_params']['_type'];
-
-        header('Content-Type:application/json; charset=utf-8');
-        require '../vendor/autoload.php';
-        $this->client =  ClientBuilder::create()
-            ->setHosts([\Yii::$app->params['qa_params']['es_host']])
-            ->build();
-    }
 
     /**
      * @param $content
@@ -36,36 +21,9 @@ class ElasticController extends Controller
      */
     public function actionGetMessage($content,$page_size=null,$page_now=null)
     {
-        if(!$this->client)
-        {
-            $this->init();
-        }
-        $page_size = $page_size ? $page_size : $this->back_num;
-        $params = [
-            'index' => $this->_index,
-            'type'  => $this->_type,
-            'body' => [
-                'size'  => $page_size,
-                'from'  => $page_now ? ($page_now-1) * $page_size : 0,
-                'query' => [
-                    'bool' => [
-                        'should' => [
-                            'match_phrase' => [
-                                'content' => $content
-                            ]
-                        ]
-                    ]
-                ],
-            ]
-        ];
-        $result = $this->client->search($params);
-        $result =  isset($result['hits']) ? $result['hits'] : [];
-        header('Content-Type:application/json; charset=utf-8');
-        exit(json_encode([
-            'code' => 1000,
-            'message' => 'success',
-            'data' => $result
-        ]));
+        $this->_success['data'] = Factory::get(ESService::class)->actionGetMessage($content,$page_size,$page_now);
+        $this->_back = $this->_success;
+        $this->json();
     }
 
 
@@ -75,33 +33,9 @@ class ElasticController extends Controller
      */
     public function actionGetConvert($convert_id)
     {
-        if(!$this->client)
-        {
-            $this->init();
-        }
-        $params = [
-            'index' => $this->_index,
-            'type'  => $this->_type,
-            'body' => [
-                'query' => [
-                    'bool' => [
-                        'should' => [
-                            'match_phrase' => [
-                                'task_id' => $convert_id
-                            ]
-                        ]
-                    ]
-                ],
-            ]
-        ];
-        $result = $this->client->search($params);
-        $result =  isset($result['hits']) ? $result['hits'] : [];
-        header('Content-Type:application/json; charset=utf-8');
-        exit(json_encode([
-            'code' => 1000,
-            'message' => 'success',
-            'data' => $result
-        ]));
+        $this->_success['data'] = Factory::get(ESService::class)->actionGetConvert($convert_id);
+        $this->_back = $this->_success;
+        $this->json();
     }
 
 
@@ -110,61 +44,10 @@ class ElasticController extends Controller
      */
     public function actionGetRecordList($record_ids)
     {
-        $this->init();
-        try{
-            $result = [];
-            $record_ids = explode(',',$record_ids);
-            foreach($record_ids as $key=>$val)
-            {
-                $temp = $this->getField('check_id',$val);
-                foreach($temp as $k=>$v)
-                {
-                    $result[] = isset($v['_source']) ? $v['_source'] : [];
-                }
-            }
-        }catch (\Exception $e){
-            return $e->getMessage();
-        }
-        $result =  $this->getKeyByArray($result,'check_id');
-        header('Content-Type:application/json; charset=utf-8');
-        exit(json_encode([
-            'code' => 1000,
-            'message' => 'success',
-            'data' => $result
-        ]));
+        $this->_success['data'] = Factory::get(ESService::class)->actionGetRecordList($record_ids);
+        $this->_back = $this->_success;
+        $this->json();
     }
-
-    public function getField($field,$value)
-    {
-        $params = [
-            'index' => $this->_index,
-            'type'  => $this->_type,
-            'body' => [
-                'size'  => $this->back_num,
-                'query' => [
-                    'match' => [
-                        $field => $value,
-                    ]
-                ],
-            ]
-        ];
-
-        $result = $this->client->search($params);
-        return isset($result['hits']['hits']) ? $result['hits']['hits'] : [];
-    }
-
-    public function getKeyByArray($data,$field)
-    {
-        $result = [];
-        if(!empty($data))
-        {
-            foreach($data as $key=>$val){
-                $result[$val[$field]] = $val;
-            }
-        }
-        return $result;
-    }
-
 
     /**
      * 写入es
@@ -172,27 +55,13 @@ class ElasticController extends Controller
     public function actionWrite()
     {
         $param = \Yii::$app->request->post('param');
-        $this->init();
-        $index = [
-            'index'  => $this->_index,
-            'type'   => $this->_type,
-            'body'   => $param
-        ];
         try{
-            $res = $this->client->index($index);
-            if($res){
-                echo json_encode([
-                    'code' => 1000,
-                    'message' => 'success',
-                ]);
-            }
+            Factory::get(ESService::class)->actionWrite($param);
+            $this->_back = $this->_success;
         }catch (\Exception $e){
-            echo json_encode([
-                'code' => 1001,
-                'message' => $param
-            ]);
+            $this->_back = $this->_failed;
         }
-
+        $this->json();
     }
 
     /**
@@ -204,85 +73,47 @@ class ElasticController extends Controller
     {
         $task_id = \Yii::$app->request->post('task_id');
         $content = \Yii::$app->request->post('content');
-        $this->init();
-        $params = [
-            'index' => $this->_index,
-            'type'  => $this->_type,
-            'body' => [
-                'query' => [
-                    'match' => [
-                        'task_id' => $task_id,
-                    ]
-                ],
-                'script' => [
-                    "inline" => "ctx._source.content = '{$content}'",
-                ],
-            ]
-        ];
         try{
-            $result = $this->client->updateByQuery($params);
-            if(empty($result) && !$result['updated'])
-            {
-                throw new \Exception('update failed');
-            }
-            echo json_encode([
-                'code' => 1000,
-                'message' => 'success'
-            ]);
+            Factory::get(ESService::class)->actionUpdate($task_id,$content);
+            $this->_back = $this->_success;
         }catch (\Exception $e){
-            echo json_encode([
-                'code' => 1001,
-                'message' => 'error'
-            ]);
+            $this->_back = $this->_failed;
         }
+        $this->json();
     }
+
 
     /**
-     * 多滚关键字同时检索
-     * @param $contents
-     * @param int $pageNum
+     * @param $task_id
+     * @param $content
+     * 已经质检更新状态
      */
-    public function actionGetContents($contents,$pageNum=1)
+    public function actionCheckUpdate()
     {
-        $contents = json_decode($contents,true);
-        $result  = [];
-        foreach($contents as $key=>$val)
-        {
-            $data = $this->getFiledVal('content',$val);
-            $result = array_merge($data,$result);
+        $check_id = \Yii::$app->request->post('check_id');
+        $check_status = \Yii::$app->request->post('check_status');
+        try{
+            Factory::get(ESService::class)->actionCheckUpdate($check_id,$check_status);
+            $this->_back = $this->_success;
+        }catch (\Exception $e){
+            $this->_back = $this->_failed;
         }
-        $start = $pageNum ? $pageNum : 1;
-        $numRes = array_slice($result,($start-1),20);
-        unset($data);
-        $data['total'] = count($result);
-        $data['hits']  = $numRes;
-        exit(json_encode([
-            'code'    => 1000,
-            'message' => 'success',
-            'data'    => $data
-        ]));
+        $this->json();
     }
 
-    public function getFiledVal($filed,$val)
+
+
+    /**
+     * 多关键字同时检索
+     * @param $contents
+     * @param $check_status
+     * @param int $pageNum
+     */
+    public function actionGetContents($contents,$check_status='',$pageNum=1)
     {
-        $params = [
-            'index' => $this->_index,
-            'type'  => $this->_type,
-            'body' => [
-                'size'  => $this->back_num,
-                'query' => [
-                    'bool' => [
-                        'should' => [
-                            'match_phrase' => [
-                                $filed => $val
-                            ]
-                        ]
-                    ]
-                ],
-            ]
-        ];
-        $result = $this->client->search($params);
-        return isset($result['hits']['hits']) ? $result['hits']['hits'] : [];
+        $this->_success['data'] = Factory::get(ESService::class)->actionGetContents($contents,$check_status,$pageNum);
+        $this->_back = $this->_success;
+        $this->json();
     }
 
 }
