@@ -269,6 +269,13 @@ class ESService extends BaseService
                         ],
                     ]
                 ],
+                'highlight' => [
+                    'fields' => [
+                        'content'=>[
+                            'force_source' => true
+                        ]
+                    ]
+                ],
             ];
         }else{
             $params = [
@@ -280,12 +287,28 @@ class ESService extends BaseService
                         ]
                     ]
                 ],
+                'highlight' => [
+                    'fields' => [
+                        'content'=>[
+                            'force_source' => true
+                        ]
+                    ]
+                ],
             ];
         }
 
         $params = $this->jointParam($params);
         $result = $this->client->search($params);
-        return isset($result['hits']['hits']) ? $result['hits']['hits'] : [];
+        $result =  isset($result['hits']['hits']) ? $result['hits']['hits'] : [];
+        if(!empty($result)){
+
+            foreach($result as $key=>$val)
+            {
+                $result[$key]['_source']['content'] = $val['highlight']['content'][0];
+                unset($result[$key]['highlight']);
+            }
+        }
+        return $result;
     }
 
 
