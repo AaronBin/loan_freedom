@@ -240,8 +240,8 @@ class ESService extends BaseService
             $data = $this->getFiledVal('content',$val,$check_status);
             $result = array_merge($data,$result);
         }
-        $start = $pageNum ? $pageNum : 1;
-        $numRes = array_slice($result,($start-1),20);
+        $start = $pageNum ? (($pageNum-1)*20) : 0;
+        $numRes = array_slice($result,$start,20);
         unset($data);
         $data['total'] = count($result);
         $data['hits']  = $numRes;
