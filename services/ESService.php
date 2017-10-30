@@ -272,7 +272,7 @@ class ESService extends BaseService
                 'highlight' => [
                     'fields' => [
                         'content'=>[
-                            'force_source' => true
+                            'fragment_size' => 10000
                         ]
                     ]
                 ],
@@ -290,7 +290,7 @@ class ESService extends BaseService
                 'highlight' => [
                     'fields' => [
                         'content'=>[
-                            'force_source' => true
+                            'fragment_size' => 10000,
                         ]
                     ]
                 ],
@@ -300,8 +300,7 @@ class ESService extends BaseService
         $params = $this->jointParam($params);
         $result = $this->client->search($params);
         $result =  isset($result['hits']['hits']) ? $result['hits']['hits'] : [];
-        if(!empty($result)){
-
+        if(!empty($result)) {
             foreach($result as $key=>$val)
             {
                 $result[$key]['_source']['content'] = $val['highlight']['content'][0];
