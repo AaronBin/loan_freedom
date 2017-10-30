@@ -1,6 +1,7 @@
 <?php
 namespace app\controllers;
-use OSS\OssClient;
+use app\libs\Factory;
+use app\services\OSSService;
 
 /**
  * Created by PhpStorm.
@@ -11,98 +12,29 @@ use OSS\OssClient;
 
 class OssController extends BaseController
 {
-    public $access_key_id     = 'LTAIRcIsds2Olwev';
-    public $access_key_secret = 'CegkdzzDDpA9DkTcfkP2m5ivC8xFtK';
-    public $endpoint          = 'oss-cn-hangzhou.aliyuncs.com';
-    public $bucket            = 'afterloan';
-    public $timeout           = 3600;
-
-    public $client = null;
-    public function oss_init()
-    {
-        require_once '../vendor/autoload.php';
-        if(!isset($this->client)){
-            $this->client = new OssClient($this->access_key_id,$this->access_key_secret,$this->endpoint);
-        }
-        return $this->client;
-    }
 
     public function actionOssUpload($url)
     {
-        $this->oss_init();
         try{
-            $data = $this->download($url);
-            if(empty($data))
-            {
-                throw new \Exception('下载远程文件失败');
-            }
-            $object = 'record/'.$data['file_name'];
-            $result = $this->client->uploadFile($this->bucket,$object,$data['save_path']);
-            unlink($data['save_path']);
+            $this->_success['data'] = Factory::get(OSSService::class)->actionOssUpload($url);
+            $this->_back = $this->_success;
+
         }catch (\Exception $e){
-            exit(json_encode([
-                'code' => 1001,
-                'message' => $e->getMessage(),
-            ]));
+            $this->_success['data'] = $e->getMessage();
+            $this->_back = $this->_failed;
         }
-        exit(json_encode([
-            'code' => 1000,
-            'message' => 'success',
-            'data' => [
-                'oss_key' => $data['file_name'],
-                'oss_url' => $result['info']['url'],
-            ]
-        ]));
+        $this->json();
     }
 
-    public function download($url)
-    {
-        $save_dir  = $_SERVER['DOCUMENT_ROOT'].'/temp/';
-        $filename  = time() . str_shuffle(mt_rand(1000000000, 9999999900)).'.mp3';
-        if (trim($url) == '') {
-            return false;
-        }
-        if (trim($save_dir) == '') {
-            $save_dir = './';
-        }
-        if (0 !== strrpos($save_dir, '/')) {
-            $save_dir.= '/';
-        }
-        //创建保存目录
-        if (!file_exists($save_dir) && !mkdir($save_dir, 0777, true)) {
-            return false;
-        }
-        //获取远程文件所采用的方法
-        $ch = curl_init();
-        $timeout = 5;
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
-        $content = curl_exec($ch);
-        curl_close($ch);
-
-        $size = strlen($content);
-        //文件大小
-        $fp2 = @fopen($save_dir . $filename, 'a');
-        fwrite($fp2, $content);
-        fclose($fp2);
-        unset($content, $url);
-        $data = [
-            'file_name' => $filename,
-            'save_path' => $save_dir . $filename,
-            'file_size' => $size
-        ];
-        return $data;
-    }
 
     /**
      * @param $object
      */
     public function actionSignUrl($object)
     {
-        $this->oss_init();
+        Factory::get(OSSService::class)->oss_init();
         try{
-            $this->_success['data'] = $this->client->signUrl($this->bucket, $object,$this->timeout);
+            $this->_success['data'] = Factory::get(OSSService::class)->client->signUrl(\Yii::$app->params['oss']['bucket'], $object,\Yii::$app->params['oss']['timeout']);
             $this->_back = $this->_success;
         } catch(\Exception $e) {
             $this->_success['data'] = $e->getMessage();
