@@ -1,7 +1,6 @@
 <?php
 namespace app\controllers;
 use OSS\OssClient;
-use yii\web\Controller;
 
 /**
  * Created by PhpStorm.
@@ -10,13 +9,13 @@ use yii\web\Controller;
  * Time: 16:21
  */
 
-class OssController extends Controller
+class OssController extends BaseController
 {
     public $access_key_id     = 'LTAIRcIsds2Olwev';
     public $access_key_secret = 'CegkdzzDDpA9DkTcfkP2m5ivC8xFtK';
     public $endpoint          = 'oss-cn-hangzhou.aliyuncs.com';
     public $bucket            = 'afterloan';
-
+    public $timeout           = 3600;
 
     public $client = null;
     public function oss_init()
@@ -94,6 +93,22 @@ class OssController extends Controller
             'file_size' => $size
         ];
         return $data;
+    }
+
+    /**
+     * @param $object
+     */
+    public function actionSignUrl($object)
+    {
+        $this->oss_init();
+        try{
+            $this->_success['data'] = $this->client->signUrl($this->bucket, $object,$this->timeout);
+            $this->_back = $this->_success;
+        } catch(\Exception $e) {
+            $this->_success['data'] = $e->getMessage();
+            $this->_back = $this->_failed;
+        }
+        $this->json();
     }
 
 }
