@@ -8,4 +8,11 @@ return [
         '_index'  => 'call_system_record',
         '_type'   => 'logs',
     ],
+    'oss' => [
+        'access_key_id' => 'LTAIRcIsds2Olwev',
+        'access_key_secret' => 'CegkdzzDDpA9DkTcfkP2m5ivC8xFtK',
+        'endpoint'  => 'oss-cn-hangzhou.aliyuncs.com',
+        'bucket'    => 'afterloan',
+        'timeout'   => 3600,
+    ],
 ];
