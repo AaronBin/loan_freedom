@@ -18,6 +18,7 @@ class ConvertService extends BaseService
     public function getConvert($url)
     {
         try{
+            $this->createDir();
             $urls = explode('&',$url);
             $url  = $urls[0].'  '.$urls[1].' '.$urls[2];
             $path = $_SERVER['DOCUMENT_ROOT'];
@@ -66,5 +67,27 @@ class ConvertService extends BaseService
             }
         }
         return $call_content;
+    }
+
+    public function createDir()
+    {
+        $dir = [
+            '/usr/local/record/pcm',
+            '/usr/local/record/video'
+        ];
+        try{
+            foreach($dir as $val)
+            {
+                if (0 !== strrpos($val, '/')) {
+                    $val.= '/';
+                }
+                //创建保存目录
+                if (!file_exists($val) && !mkdir($val, 0777, true)) {
+                    return false;
+                }
+            }
+        }catch (\Exception $e){
+            throw new \Exception($e->getMessage());
+        }
     }
 }
