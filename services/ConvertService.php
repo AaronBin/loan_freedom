@@ -9,16 +9,17 @@
 
 class ConvertService extends BaseService
 {
-
     /**
      * @param $url
+     * @return string
      * @throws \Exception
      * 转写服务接口
      */
     public function getConvert($url)
     {
-        $url = "http://afterloan.oss-cn-hangzhou.aliyuncs.com/record/15100963705000415031.mp3?OSSAccessKeyId=LTAIRcIsds2Olwev Expires=1510217702 Signature=PRByYZOJswKkaCVNTn0EqdfPfhY%3D";
         try{
+            $urls = explode('&',$url);
+            $url  = $urls[0].'  '.$urls[1].' '.$urls[2];
             $path = $_SERVER['DOCUMENT_ROOT'];
             $path = substr($path,0,strlen($path)-4).'/libs/jar/java-record-convert.jar';
             $host = \Yii::$app->params['convert_sdk']['sdk_host'];
@@ -26,7 +27,6 @@ class ConvertService extends BaseService
             exec($java,$output,$returnVal);
             $data = end($output);
             return $this->formatData($data);
-
         }catch (\Exception $e){
             throw new \Exception($e->getMessage());
         }
