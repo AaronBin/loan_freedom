@@ -16,7 +16,6 @@ class ConvertController extends BaseController
     public function actionConvert()
     {
         $url = \Yii::$app->request->post('url');
-        $url = "http://afterloan.oss-cn-hangzhou.aliyuncs.com/record/15102922237866547600.mp3?OSSAccessKeyId=LTAIRcIsds2Olwev&Expires=1510298433&Signature=Vgi57v5HDXUOdhQ7tfjpBjhB%2FWo%3D";
         try{
            $this->_success['data'] = Factory::get(ConvertService::class)->getConvert($url);
             $this->_back = $this->_success;
