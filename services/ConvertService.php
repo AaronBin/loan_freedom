@@ -72,8 +72,8 @@ class ConvertService extends BaseService
     public function createDir()
     {
         $dir = [
-            '/usr/local/record/pcm',
-            '/usr/local/record/video'
+            '/tmp/record/pcm',
+            '/tmp/record/video'
         ];
         try{
             foreach($dir as $val)
