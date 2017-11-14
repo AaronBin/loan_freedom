@@ -25,7 +25,7 @@ class ConvertService extends BaseService
             $path = $_SERVER['DOCUMENT_ROOT'];
             $path = substr($path,0,strlen($path)-4).'/libs/jar/java-record-convert.jar';
             $host = \Yii::$app->params['convert_sdk']['sdk_host'];
-            $java = "source /etc/profile: java -jar {$path} {$host}  {$url}";
+            $java = "source /etc/profile; java -jar {$path} {$host}  {$url}";
 
             exec($java,$output,$returnVal);
 
