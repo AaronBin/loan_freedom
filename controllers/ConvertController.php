@@ -12,7 +12,6 @@ use app\services\ConvertService;
 
 class ConvertController extends BaseController
 {
-
     public function actionConvert()
     {
         $url   = \Yii::$app->request->post('url');
@@ -25,6 +24,17 @@ class ConvertController extends BaseController
             $this->_back = $this->_failed;
         }
         $this->json();
+    }
+
+    public function actionDemo()
+    {
+        try{
+            exec('ls',$output,$returnVal);
+
+        }catch (\Exception $e){
+            var_dump($e->getMessage());
+        }
+        var_dump($output);
     }
 
 }
