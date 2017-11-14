@@ -26,19 +26,4 @@ class ConvertController extends BaseController
         $this->json();
     }
 
-    public function actionDemo($type=false)
-    {
-        if($type){
-            phpinfo();
-        }
-
-        try{
-            exec('ls',$output,$returnVal);
-
-        }catch (\Exception $e){
-            var_dump($e->getMessage());
-        }
-        var_dump($output);
-    }
-
 }
