@@ -25,6 +25,7 @@ class ConvertService extends BaseService
             $path = substr($path,0,strlen($path)-4).'/libs/jar/java-record-convert.jar';
             $host = \Yii::$app->params['convert_sdk']['sdk_host'];
             $java = "java -jar {$path} {$host}  {$url}";
+
             exec($java,$output,$returnVal);
 
             exit(json_encode($output));
