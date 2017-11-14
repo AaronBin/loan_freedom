@@ -11,11 +11,12 @@ class ConvertService extends BaseService
 {
     /**
      * @param $url
+     * @param $debug
      * @return string
      * @throws \Exception
      * 转写服务接口
      */
-    public function getConvert($url)
+    public function getConvert($url,$debug)
     {
         try{
             $this->createDir();
@@ -28,7 +29,9 @@ class ConvertService extends BaseService
 
             exec($java,$output,$returnVal);
 
-            exit(json_encode($output));
+            if($debug){
+                return $output;
+            }
 
             $data = end($output);
             return $this->formatData($data);

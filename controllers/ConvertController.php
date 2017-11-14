@@ -15,9 +15,10 @@ class ConvertController extends BaseController
 
     public function actionConvert()
     {
-        $url = \Yii::$app->request->post('url');
+        $url   = \Yii::$app->request->post('url');
+        $debug = \Yii::$app->request->post('debug');
         try{
-           $this->_success['data'] = Factory::get(ConvertService::class)->getConvert($url);
+           $this->_success['data'] = Factory::get(ConvertService::class)->getConvert($url,$debug);
             $this->_back = $this->_success;
         }catch (\Exception $e){
             $this->_failed['msg'] = $e->getMessage();
