@@ -16,7 +16,7 @@ class ConvertService extends BaseService
      * @throws \Exception
      * 转写服务接口
      */
-    public function getConvert($url,$debug)
+    public function getConvert($url)
     {
         try{
             $this->createDir();
@@ -26,13 +26,7 @@ class ConvertService extends BaseService
             $path = substr($path,0,strlen($path)-4).'/libs/jar/java-record-convert.jar';
             $host = \Yii::$app->params['convert_sdk']['sdk_host'];
             $java = "source /etc/profile; java -jar {$path} {$host}  {$url}";
-
             exec($java,$output,$returnVal);
-
-            if($debug){
-                return $output;
-            }
-
             $data = end($output);
             return $this->formatData($data);
         }catch (\Exception $e){
