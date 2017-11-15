@@ -16,7 +16,7 @@ class ConvertController extends BaseController
     {
         $url   = \Yii::$app->request->post('url');
         try{
-           $this->_success['data'] = Factory::get(ConvertService::class)->getConvert($url,$debug);
+           $this->_success['data'] = Factory::get(ConvertService::class)->getConvert($url);
             $this->_back = $this->_success;
         }catch (\Exception $e){
             $this->_failed['msg'] = $e->getMessage();

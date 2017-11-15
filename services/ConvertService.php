@@ -27,6 +27,7 @@ class ConvertService extends BaseService
             $host = \Yii::$app->params['convert_sdk']['sdk_host'];
             $java = "source /etc/profile; java -jar {$path} {$host}  {$url}";
             exec($java,$output,$returnVal);
+            array_pop($output);
             $data = end($output);
             return $this->formatData($data);
         }catch (\Exception $e){
