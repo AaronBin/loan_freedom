@@ -115,5 +115,23 @@ class ElasticController extends BaseController
         $this->_back = $this->_success;
         $this->json();
     }
-    
+
+
+    /**
+     * @param $check_id
+     * @param $call_time
+     * 更细通话时间字段
+     */
+    public function actionResetCallTime($check_id,$call_time)
+    {
+        try{
+            Factory::get(ESService::class)->actionResetCallTime($check_id,$call_time);
+            $this->_back = $this->_success;
+        }catch (\Exception $e){
+            $this->_failed['msg'] = $e->getMessage();
+            $this->_back = $this->_failed;
+        }
+        $this->json();
+    }
+
 }

@@ -240,6 +240,17 @@ class ESService extends BaseService
             $data = $this->getFiledVal('content',$val,$check_status);
             $result = array_merge($data,$result);
         }
+        if(!empty($result))
+        {
+            foreach($result as $key=>$val){
+                $result[$key]['sort'] = $val['_source']['created_at'];
+            }
+            $temp = array();
+            foreach ($result as $v) {
+                $temp[] = $v['sort'];
+            }
+            array_multisort($temp, SORT_DESC,$result );
+        }
         $start = $pageNum ? (($pageNum-1)*20) : 0;
         $numRes = array_slice($result,$start,20);
         unset($data);
@@ -250,6 +261,18 @@ class ESService extends BaseService
 
     public function getFiledVal($filed,$val,$check_status)
     {
+        $this->init();
+        $data = [
+            'properties' => [
+                'created_at' => [
+                    'type' => 'text',
+                    'fielddata' => true,
+                ]
+            ]
+        ];
+        $url = \Yii::$app->params['qa_params']['es_host'].'/'.$this->_index.'/_mapping/'.$this->_type;
+        $data = json_encode($data);
+        $this->_curl_put($url,$data);
         if($check_status){
             $params = [
                 'size'  => $this->back_num,
@@ -269,6 +292,11 @@ class ESService extends BaseService
                         ],
                     ]
                 ],
+                'sort' => [
+                    'created_at' => [
+                        'order'=> 'desc',
+                    ],
+                ],
                 'highlight' => [
                     'fields' => [
                         'content'=>[
@@ -286,6 +314,11 @@ class ESService extends BaseService
                             ['match_phrase' => [$filed => $val]],
                         ]
                     ]
+                ],
+                'sort' => [
+                    'created_at' => [
+                        'order'=> 'desc',
+                    ],
                 ],
                 'highlight' => [
                     'fields' => [
@@ -310,5 +343,49 @@ class ESService extends BaseService
         return $result;
     }
 
+    /**
+     * @param $check_id
+     * @param $call_time
+     * @throws \Exception
+     * 更新通话时间字段
+     */
+    public function actionResetCallTime($check_id,$call_time)
+    {
+        $params = [
+            'query' => [
+                'match' => [
+                    'check_id' => $check_id,
+                ]
+            ],
+            'script' => [
+                "inline" => "ctx._source.created_at = {$call_time}",
+            ],
+        ];
+        $params = $this->jointParam($params);
+        try{
+            $result = $this->client->updateByQuery($params);
+
+            if(empty($result) && !$result['updated'])
+            {
+                throw new \Exception('update failed');
+            }
+        }catch (\Exception $e){
+            throw new \Exception($e->getMessage());
+        }
+    }
+
+    public function _curl_put($url,$data)
+    {
+        $ch = curl_init(); //初始化CURL句柄
+        curl_setopt($ch, CURLOPT_URL, $url); //设置请求的URL
+        curl_setopt ($ch, CURLOPT_HTTPHEADER, array('Content-type:application/json'));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER,1); //设为TRUE把curl_exec()结果转化为字串，而不是直接输出
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST,"PUT"); //设置请求方式
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);//设置提交的字符串
+        $output = curl_exec($ch);
+        curl_close($ch);
+        $result = json_decode($output,true);
+        return $result;
+    }
 
 }
