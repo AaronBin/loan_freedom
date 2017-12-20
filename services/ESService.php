@@ -351,6 +351,15 @@ class ESService extends BaseService
      */
     public function actionResetCallTime($check_id,$call_time)
     {
+        $url = \Yii::$app->params['qa_params']['es_host'].'/_cluster/settings';
+        $data = [
+            'transient' => [
+                'script.max_compilations_per_minute' => 30
+            ]
+        ];
+        $data = json_encode($data);
+        $this->_curl_put($url,$data);
+
         $params = [
             'query' => [
                 'match' => [
