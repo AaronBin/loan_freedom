@@ -228,16 +228,19 @@ class ESService extends BaseService
     /**
      * 多关键字同时检索
      * @param $contents
-     * @param $check_status
+     * @param string $check_status
      * @param int $pageNum
+     * @param $begin_time
+     * @param $end_time
+     * @return array
      */
-    public function actionGetContents($contents,$check_status='',$pageNum=1)
+    public function actionGetContents($contents,$check_status='',$pageNum=1,$begin_time,$end_time)
     {
         $contents = json_decode($contents,true);
         $result  = [];
         foreach($contents as $key=>$val)
         {
-            $data = $this->getFiledVal('content',$val,$check_status);
+            $data = $this->getFiledVal('content',$val,$check_status,$begin_time,$end_time);
             $result = array_merge($data,$result);
         }
         if(!empty($result))
@@ -259,7 +262,7 @@ class ESService extends BaseService
         return $data;
     }
 
-    public function getFiledVal($filed,$val,$check_status)
+    public function getFiledVal($filed,$val,$check_status,$begin_time,$end_time)
     {
         $this->init();
         $data = [
@@ -273,6 +276,7 @@ class ESService extends BaseService
         $url = \Yii::$app->params['qa_params']['es_host'].'/'.$this->_index.'/_mapping/'.$this->_type;
         $data = json_encode($data);
         $this->_curl_put($url,$data);
+
         if($check_status){
             $params = [
                 'size'  => $this->back_num,
@@ -288,8 +292,16 @@ class ESService extends BaseService
                                 'match' => [
                                     'check_status' => $check_status
                                 ]
-                            ]
+                            ],
                         ],
+                        'filter' => [
+                            'range' => [
+                                'created_at' => [
+                                    'gte' => $begin_time,
+                                    'lte' => $end_time
+                                ]
+                            ]
+                        ]
                     ]
                 ],
                 'sort' => [
@@ -310,10 +322,18 @@ class ESService extends BaseService
                 'size'  => $this->back_num,
                 'query' => [
                     'bool' => [
-                        'should' => [
+                        'must' => [
                             ['match_phrase' => [$filed => $val]],
+                        ],
+                        'filter' => [
+                            'range' => [
+                                'created_at' => [
+                                    'gte' => $begin_time,
+                                    'lte' => $end_time
+                                ]
+                            ]
                         ]
-                    ]
+                    ],
                 ],
                 'sort' => [
                     'created_at' => [
@@ -332,6 +352,7 @@ class ESService extends BaseService
 
         $params = $this->jointParam($params);
         $result = $this->client->search($params);
+
         $result =  isset($result['hits']['hits']) ? $result['hits']['hits'] : [];
         if(!empty($result)) {
             foreach($result as $key=>$val)
