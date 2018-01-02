@@ -109,11 +109,12 @@ class ElasticController extends BaseController
      * @param int $pageNum
      * @param $begin_time
      * @param $end_time
+     * @param $limit
      */
-    public function actionGetContents($contents,$check_status='',$pageNum=1,$begin_time=0,$end_time=0)
+    public function actionGetContents($contents,$check_status='',$pageNum=1,$begin_time=0,$end_time=0,$limit=20)
     {
         date_default_timezone_set("Asia/Shanghai");
-        $this->_success['data'] = Factory::get(ESService::class)->actionGetContents($contents,$check_status,$pageNum,$begin_time,$end_time);
+        $this->_success['data'] = Factory::get(ESService::class)->actionGetContents($contents,$check_status,$pageNum,$begin_time,$end_time,$limit);
         $this->_back = $this->_success;
         $this->json();
     }

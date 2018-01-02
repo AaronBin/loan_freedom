@@ -232,9 +232,10 @@ class ESService extends BaseService
      * @param int $pageNum
      * @param $begin_time
      * @param $end_time
+     * @param $limit
      * @return array
      */
-    public function actionGetContents($contents,$check_status='',$pageNum=1,$begin_time,$end_time)
+    public function actionGetContents($contents,$check_status='',$pageNum=1,$begin_time,$end_time,$limit)
     {
         $contents = json_decode($contents,true);
         $result  = [];
@@ -254,8 +255,8 @@ class ESService extends BaseService
             }
             array_multisort($temp, SORT_DESC,$result );
         }
-        $start = $pageNum ? (($pageNum-1)*20) : 0;
-        $numRes = array_slice($result,$start,20);
+        $start = $pageNum ? (($pageNum-1)*$limit) : 0;
+        $numRes = array_slice($result,$start,$limit);
         unset($data);
         $data['total'] = count($result);
         $data['hits']  = $numRes;
