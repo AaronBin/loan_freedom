@@ -26,7 +26,7 @@ class BaseController extends  Controller{
                 'appid' => \Yii::$app->params['weChat']['appId'], //填写高级调用功能的app id
                 'appsecret' => \Yii::$app->params['weChat']['appsecret'], //填写高级调用功能的app id
             ];
-            require '../vendor/wechat/Wechat.php';
+            require '../vendor/wechat/wechat.php';
             $this->app = new \Wechat($options);
         }
         return $this->app;
