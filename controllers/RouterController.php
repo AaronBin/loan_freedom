@@ -14,7 +14,6 @@ class RouterController extends BaseController
     {
 
         trace_info(0,'GET_INFO','hello');
-
         $this->wechat()->valid();
         $type = $this->wechat()->getRev()->getRevType();
         switch($type) {
