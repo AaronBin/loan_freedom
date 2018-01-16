@@ -12,10 +12,10 @@ class RouterController extends BaseController
 
     public function actionApi()
     {
-        $this->wechat()->valid();
-        $type = $this->wechat()->getRev()->getRevType();
-        $openid = $this->wechat()->getRevFrom();
-
-        var_dump($openid);
+//        $this->wechat()->valid();
+//        $type = $this->wechat()->getRev()->getRevType();
+//        $openid = $this->wechat()->getRevFrom();
+//
+//        var_dump($openid);
     }
 }
