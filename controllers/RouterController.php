@@ -12,7 +12,6 @@ class RouterController extends BaseController
 
     public function actionApi()
     {
-
         trace_info(0,'GET_INFO','hello');
         $this->wechat()->valid();
         $type = $this->wechat()->getRev()->getRevType();
