@@ -2,7 +2,6 @@
 
 $params = require(__DIR__ .'/'.YII_ENV.'/params.php');
 $db = require(__DIR__ .'/'.YII_ENV. '/db.php');
-
 $config = [
     'id' => 'basic',
     'basePath' => dirname(__DIR__),
