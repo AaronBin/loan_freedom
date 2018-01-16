@@ -1,4 +1,5 @@
 <?php namespace app\controllers;
+
 /**
  * Created by PhpStorm.
  * User: zhaobin
@@ -9,24 +10,12 @@
 class RouterController extends BaseController
 {
 
-    var $app = null;
-
-    /**
-     * single instance wechat function
-     * @return WechatObject the wechat object
-     */
-    protected function app()
+    public function actionApi()
     {
-        if ($this->app === null) {
+        $this->wechat()->valid();
+        $type = $this->wechat()->getRev()->getRevType();
+        $openid = $this->wechat()->getRevFrom();
 
-        }
-        return $this->app;
-    }
-
-
-    public function actionApi(){
-
-
-        echo 111;
+        var_dump($openid);
     }
 }
